@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<cameraDistoration type_id="opencv-matrix">
+  <rows>5</rows>
+  <cols>1</cols>
+  <dt>d</dt>
+  <data>
+    -3.8105117843095559e-01 2.4164351661242375e-01
+    9.3293570553525465e-04 -1.9526088751923355e-03
+    -1.1826323216543390e-01</data></cameraDistoration>
+</opencv_storage>
