@@ -1,43 +1,5 @@
 #include "preprocess.h"
 
-void on_mouse(int event, int x, int y, int flags, void *ustc)
-//eventÊó±êÊÂ¼ş´úºÅ£¬x,yÊó±ê×ø±ê£¬flagsÍÏ×§ºÍ¼üÅÌ²Ù×÷µÄ´úºÅ    
-{
-	bool ÊÇ·ñ»­¾ØĞÎ = false;//²»¿É±ÜÃâµØ»¹ÊÇÒª¶¨Òå¼¸¸öÈ«¾Ö±äÁ¿£¬ÉËĞÄ
-	Point ×ó»÷¶¥µã = Point(-1, -1);
-	Point Êó±êÎ»ÖÃ = Point(-1, -1);
-	Mat& image = *(cv::Mat*) ustc;//ÕâÑù¾Í¿ÉÒÔ´«µİMatĞÅÏ¢ÁË£¬ºÜ»úÖÇ
-	char temp[16];
-	switch (event) {
-	case CV_EVENT_LBUTTONDOWN://°´ÏÂ×ó¼ü
-	{
-		sprintf(temp, "(%d,%d)", x, y);
-		putText(image, temp, Point(x, y), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0, 255));
-		ÊÇ·ñ»­¾ØĞÎ = true;
-		×ó»÷¶¥µã = Point(x, y);
-	}	break;
-	case CV_EVENT_MOUSEMOVE://ÒÆ¶¯Êó±ê
-	{
-		Êó±êÎ»ÖÃ = Point(x, y);
-		if (ÊÇ·ñ»­¾ØĞÎ)
-		{
-		}
-	}break;
-	case EVENT_LBUTTONUP:
-	{
-		ÊÇ·ñ»­¾ØĞÎ = false;
-		sprintf(temp, "(%d,%d)", x, y);
-		putText(image, temp, Point(x, y), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0, 255));
-
-		//µ÷ÓÃº¯Êı½øĞĞ»æÖÆ
-		cv::rectangle(image, ×ó»÷¶¥µã, Êó±êÎ»ÖÃ, cv::Scalar(0, 0, 255));//Ëæ»úÑÕÉ«  
-		Mat roi = image(Rect(×ó»÷¶¥µã, Êó±êÎ»ÖÃ));
-		imwrite("template3.jpg", roi);
-	}break;
-	}
-}
-
-
 Mat preprocess(Mat frame)
 {
 	//VideoCapture cap(0);
@@ -58,7 +20,7 @@ Mat preprocess(Mat frame)
 		imshow("s", channels[1]);
 		imshow("v", channels[2]);*/
 
-		//¶şÖµ»¯
+		//äºŒå€¼åŒ–
 		//threshold(channels[2], binary_frame, 220, 255, CV_THRESH_BINARY);
 		inRange(frame, Scalar(150, 150, 150), Scalar(255, 255, 255), binary_frame);
 		//adaptiveThreshold(channels[2],binary_frame,255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY,3,5);
@@ -81,7 +43,7 @@ Mat preprocess(Mat frame)
 		Canny(dilate_frame, canny_frame, 128, 255);
 		imshow("canny", canny_frame);*/
 
-		//Ñ°ÕÒ¡¢É¸Ñ¡ÂÖÀª
+		//å¯»æ‰¾ã€ç­›é€‰è½®å»“
 		vector< vector<cv::Point> > contours_list;
 		vector< vector<cv::Point> > contours_sublist;
 		findContours(binary_frame, contours_list, RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
@@ -91,7 +53,7 @@ Mat preprocess(Mat frame)
 			if (contourArea(contours_list[i]) > 20000)
 				contours_sublist.push_back(contours_list[i]);
 		}
-		//É¸Ñ¡Ãæ»ı´óÓÚ20000ÖĞ×îĞ¡µÄ
+		//ç­›é€‰é¢ç§¯å¤§äº20000ä¸­æœ€å°çš„
 		int min_area = 640*480;
 		for (int i = 0; i < contours_sublist.size(); i++)
 		{
@@ -103,27 +65,27 @@ Mat preprocess(Mat frame)
 			}
 			//drawContours(frame_to_show, contours_sublist, i, Scalar(255), 8);
 		}
-		//³¤·½ĞÎ¿ò
+		//é•¿æ–¹å½¢æ¡†
 		Rect rect = boundingRect(corner);
 		Mat roi = gray_frame(rect);
 		rectangle(frame_to_show, rect, Scalar(255), 5);
 		imshow("gray", gray_frame);
 		Mat roi_image;
 		roi.copyTo(roi_image);
-		//ÅĞ¶Ï¶à±ßĞÎ·½Ïò
+		//åˆ¤æ–­å¤šè¾¹å½¢æ–¹å‘
 		
 		Point2f corner_dst[4] = {Point2f(0, 0), 
 								 Point2f(400, 0),
 								 Point2f(400, 300), 
 								 Point2f(0, 300)};
 		vector < Point2f > poly;
-		if (!corner.size())//ÅĞ¶ÏÂÖÀªÊÇ·ñÎª¿Õ
+		if (!corner.size())//åˆ¤æ–­è½®å»“æ˜¯å¦ä¸ºç©º
 		{
 			waitKey(1);
 			//continue;
 			return Mat(0, 0, CV_8UC1);
 		}
-		approxPolyDP(corner, poly, 15, true); //ÄâºÏ¶à±ßĞÎ
+		approxPolyDP(corner, poly, 15, true); //æ‹Ÿåˆå¤šè¾¹å½¢
 		if (poly.size() != 4)
 			return Mat(0, 0, CV_8UC1);
 		//cout << "poly:" << endl;
@@ -145,7 +107,7 @@ Mat preprocess(Mat frame)
 		//cout << "corner_src:" << endl;
 		//for(auto a:corner_src) cout << a << endl;
 
-		//¼ÆËãÉäÓ°±ä»»¾ØÕó
+		//è®¡ç®—å°„å½±å˜æ¢çŸ©é˜µ
 		Mat transfer_mat = getPerspectiveTransform(corner_dst, corner_src);
 		//cout << transfer_mat;
 		
